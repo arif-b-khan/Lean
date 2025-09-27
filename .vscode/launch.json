@@ -15,10 +15,9 @@
         that contains the py file at runtime. If using another location change "localRoot" value 
         to the directory in use.
     */
-
     "version": "0.2.0",
     "configurations": [
-        {
+    {
             "name": "Launch",
             "type": "coreclr",
             "request": "launch",
@@ -31,17 +30,26 @@
             "cwd": "${workspaceFolder}/Launcher/bin/Debug/",
             "stopAtEntry": false,
             "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "PYTHONNET_PYDLL": "/Users/arifkhan/github/MyLean/.venv/lib/libpython3.11.dylib",
+                "PYTHONHOME": "/Users/arifkhan/github/MyLean/.venv",
+                "PYTHONPATH": "/Users/arifkhan/github/MyLean/.venv/lib/python3.11/site-packages",
+                "DYLD_FALLBACK_LIBRARY_PATH": "/Users/arifkhan/github/MyLean/.venv/lib/"
+            }
         },
         {
             "name": "Attach to Python",
             "type": "python",
             "request": "attach",
+            "host": "127.0.0.1",
             "port": 5678,
-            "pathMappings":[{ 
-                "localRoot": "${workspaceFolder}", 
-                "remoteRoot": "${workspaceFolder}"
-            }]
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}/Algorithm.Python",
+                    "remoteRoot": "${workspaceFolder}/Algorithm.Python"
+                }
+            ]
         }
     ]
 }
