@@ -1,0 +1,45 @@
+name: Sync upstream
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # daily at 02:00 UTC
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Add upstream
+        run: |
+          git remote add upstream https://github.com/QuantConnect/Lean.git || true
+          # fetch all branches and tags from upstream
+          git fetch upstream --prune --tags
+
+      - name: Create sync branch from upstream/master
+        run: |
+          # fetch upstream branches and tags
+          git fetch upstream --prune --tags
+          # create a sync branch based on upstream/master and push it
+          git checkout -B sync/upstream-${{ github.run_id }} upstream/master
+          git push -f origin sync/upstream-${{ github.run_id }}
+
+      - name: Run tests (Lean CLI or unit tests)
+        run: |
+          # Example: run unit tests / docker smoke test
+          ./build_and_test.sh   # implement according to your repo
+
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: main
+          branch: sync/upstream-${{ github.run_id }}
+          title: "chore: sync from upstream QuantConnect/Lean @ ${{ github.run_id }}"
+          body: |
+            Automated sync from upstream QuantConnect/Lean.
