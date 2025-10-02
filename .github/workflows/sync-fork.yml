@@ -45,7 +45,7 @@ jobs:
           fi
 
           # pull latest from origin/master
-          git pull --ff-only origin master || git pull origin master
+          git pull --ff-only origin master || git reset --hard origin/master
 
           # compare master vs main
           git fetch origin main:refs/remotes/origin/main || true
@@ -64,9 +64,9 @@ jobs:
             if git show-ref --verify --quiet refs/heads/main; then
               git checkout main
             else
-              git checkout -b main origin/main || git checkout -b main origin/main || git checkout -b main
+              git checkout -b main origin/main || git checkout -b main
             fi
-            git pull --ff-only origin main || git pull origin main
+            git pull --ff-only origin main || git reset --hard origin/main
 
             # perform merge (create merge commit)
             if git merge --no-ff --no-edit "$SYNC_BRANCH"; then
