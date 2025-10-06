@@ -21,13 +21,25 @@ jobs:
           # fetch all branches and tags from upstream
           git fetch upstream --prune --tags
 
+
       - name: Create sync branch from upstream/master
         run: |
           # fetch upstream branches and tags
-          git fetch upstream --prune --tags
+          git checkout master
+          git pull upstream master
           # create a sync branch based on upstream/master and push it
-          git checkout -B sync/upstream-${{ github.run_id }} upstream/master
-          git push -f origin sync/upstream-${{ github.run_id }}
+          SYNC_BRANCH=sync/upstream-${{ github.run_id }}
+          git checkout -B "$SYNC_BRANCH" upstream/master
+          git push -f origin "$SYNC_BRANCH"
+
+      - name: Check if sync branch is ahead of main
+        id: check_ahead
+        run: |
+          git fetch origin main:refs/remotes/origin/main || true
+          SYNC_BRANCH=sync/upstream-${{ github.run_id }}
+          # Count commits sync branch is ahead of main
+          AHEAD=$(git rev-list --left-right --count origin/main...$SYNC_BRANCH | awk '{print $2}')
+          echo "ahead=$AHEAD" >> $GITHUB_OUTPUT
 
       - name: Validate sync
         run: |
@@ -36,6 +48,7 @@ jobs:
           echo "Sync completed successfully"
 
       - name: Create PR
+        if: steps.check_ahead.outputs.ahead != '0'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
