@@ -15,6 +15,7 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Add upstream
         run: |
@@ -41,10 +42,20 @@ jobs:
           # push updated master to origin (use force-with-lease to avoid clobbering unseen changes)
           git push --force-with-lease origin master
 
-          # create a sync branch based on upstream/master and push it
+          # create a sync branch based on upstream/master
           SYNC_BRANCH=sync/upstream-${{ github.run_id }}
           git checkout -B "$SYNC_BRANCH" upstream/master
-          git push -f origin "$SYNC_BRANCH"
+
+          # rebase the sync branch onto master so it's based on the latest master
+          echo "Rebasing $SYNC_BRANCH onto master"
+          if ! git rebase master; then
+            echo "Rebase failed — aborting and leaving branch in original state"
+            git rebase --abort || true
+            exit 1
+          fi
+
+          # push rebased sync branch to origin
+          git push --force-with-lease origin "$SYNC_BRANCH"
 
       - name: Check if sync branch is ahead of main
         id: check_ahead
