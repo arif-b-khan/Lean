@@ -1,3 +1,4 @@
+
 name: Sync upstream
 
 on:
@@ -25,9 +26,20 @@ jobs:
       - name: Create sync branch from upstream/master
         run: |
           # fetch upstream branches and tags
-          git checkout master
+          git fetch origin master:refs/remotes/origin/master --update-head-ok
+          # always check out local master from origin/master to avoid ambiguity
+          if git show-ref --verify --quiet refs/heads/master; then
+            git checkout master
+            git reset --hard origin/master
+          else
+            git checkout -b master origin/master
+          fi
           git pull upstream master
           # create a sync branch based on upstream/master and push it
+
+      - name: Push master to origin
+        run: |
+          git push origin master
           SYNC_BRANCH=sync/upstream-${{ github.run_id }}
           git checkout -B "$SYNC_BRANCH" upstream/master
           git push -f origin "$SYNC_BRANCH"
