@@ -133,6 +133,7 @@ namespace QuantConnect.Research
                     ProjectId = Globals.ProjectId,
                     OrganizationId = Globals.OrganizationID,
                     Version = Globals.Version,
+                    HistoryProvider = Config.Get("qb-history-provider", "SubscriptionDataReaderHistoryProvider"),
                     DeploymentTarget = Config.GetValue("deployment-target", DeploymentTarget.LocalPlatform)
                 };
 
