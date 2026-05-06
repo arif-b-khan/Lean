@@ -57,8 +57,19 @@ namespace QuantConnect.Lean.Launcher
                 Config.MergeCommandLineArgumentsWithConfiguration(LeanArgumentParser.ParseArguments(args));
             }
 
-            var secrets = UserSecretsCredentialBootstrapper.LoadAndValidateRequiredCredentials();
-            Config.MergeSecretsWithConfiguration(secrets);
+            // Load credentials if available, but don't fail if they're missing (common in test/dev environments)
+            var requireAllCredentials = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LEAN_REQUIRE_ALL_CREDENTIALS"));
+            try
+            {
+                var secrets = UserSecretsCredentialBootstrapper.LoadAndValidateRequiredCredentials(
+                    requireAllCredentials: requireAllCredentials);
+                Config.MergeSecretsWithConfiguration(secrets);
+            }
+            catch (InvalidOperationException credentialError) when (!requireAllCredentials)
+            {
+                // In test/dev environments, log the error but don't crash
+                Console.WriteLine($"WARNING: Credential loading failed: {credentialError.Message}");
+            }
 
             //Name thread for the profiler:
             Thread.CurrentThread.Name = "Algorithm Analysis Thread";

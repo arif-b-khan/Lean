@@ -48,6 +48,9 @@
                 "TestCategory!=TravisExclude&TestCategory!=ResearchRegressionTests"
             ],
             "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONNET_PYDLL": "${workspaceFolder}/.conda/lean-py311/lib/libpython3.11.dylib"
+            },
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
         },

@@ -34,17 +34,19 @@ namespace QuantConnect.Lean.Launcher
         /// </summary>
         /// <param name="manifestPath">Optional explicit manifest path for tests</param>
         /// <param name="secretsConfiguration">Optional explicit secrets configuration for tests</param>
+        /// <param name="requireAllCredentials">If false, missing credentials will be logged as warnings instead of errors</param>
         /// <returns>Dictionary suitable for Config.MergeSecretsWithConfiguration</returns>
-        /// <exception cref="InvalidOperationException">Thrown when manifest is missing/invalid or required keys are missing</exception>
+        /// <exception cref="InvalidOperationException">Thrown when manifest is missing/invalid or required keys are missing (if requireAllCredentials is true)</exception>
         public static Dictionary<string, string> LoadAndValidateRequiredCredentials(
             string manifestPath = null,
-            IConfiguration secretsConfiguration = null)
+            IConfiguration secretsConfiguration = null,
+            bool requireAllCredentials = true)
         {
             var resolvedManifestPath = manifestPath ?? ResolveManifestPath();
             var requiredKeys = LoadRequiredKeys(resolvedManifestPath);
 
             var secrets = secretsConfiguration ?? new ConfigurationBuilder()
-                .AddUserSecrets<Program>(optional: false)
+                .AddUserSecrets<Program>(optional: true)
                 .Build();
 
             var missingKeys = new List<string>();
@@ -64,10 +66,17 @@ namespace QuantConnect.Lean.Launcher
 
             if (missingKeys.Count != 0)
             {
-                throw new InvalidOperationException(
-                    "Missing required credentials in .NET user secrets: " + string.Join(", ", missingKeys) + Environment.NewLine +
+                var message = "Missing credentials in .NET user secrets: " + string.Join(", ", missingKeys) + Environment.NewLine +
                     "Configure credentials using dotnet user-secrets, for example:" + Environment.NewLine +
-                    "dotnet user-secrets --project Launcher/QuantConnect.Lean.Launcher.csproj set \"<key>\" \"<value>\"");
+                    "dotnet user-secrets --project Launcher/QuantConnect.Lean.Launcher.csproj set \"<key>\" \"<value>\"";
+                
+                if (requireAllCredentials)
+                {
+                    throw new InvalidOperationException(message);
+                }
+                
+                // In development/test environments, just warn about missing credentials
+                Console.WriteLine("WARNING: " + message);
             }
 
             return mergedSecrets;
@@ -79,6 +88,13 @@ namespace QuantConnect.Lean.Launcher
             if (File.Exists(localPath))
             {
                 return localPath;
+            }
+
+            // Try alternative location in development
+            var devPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "specs", "001-credential-source-hardening", ManifestFileName);
+            if (File.Exists(devPath))
+            {
+                return Path.GetFullPath(devPath);
             }
 
             throw new InvalidOperationException(

@@ -73,6 +73,11 @@
             "presentation": {
                 "reveal": "always"
             },
+            "options": {
+                "env": {
+                    "PYTHONNET_PYDLL": "${env:CONDA_PREFIX}/lib/libpython3.11.dylib"
+                }
+            },
             "problemMatcher": "$msCompile"
         },
         {
