@@ -1,5 +1,10 @@
 # OS Files
 .DS_Store
+Thumbs.db
+.venv/
+.conda/
+*.swp
+.env*
 
 # Object files
 *.o
@@ -40,6 +45,7 @@
 # Include docker launch scripts for Mac/Linux
 !run_docker.sh
 !research/run_docker_notebook.sh
+!scripts/setup_research_env.sh
 
 # QC Config Files:
 # config.json

@@ -1,0 +1,100 @@
+name: Sync upstream
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # daily at 02:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: my-master
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Add upstream
+        run: |
+          git remote add upstream https://github.com/QuantConnect/Lean.git || true
+          # fetch all branches and tags from upstream
+          git fetch upstream --prune --tags
+
+      - name: Create/update master replica and sync branch
+        run: |
+          set -euo pipefail
+
+          # Configure git identity required for rebase commits
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+          # Fetch all refs
+          git fetch origin --prune
+          git fetch upstream --prune
+
+          # Create a temporary master replica (don't push it - it has workflows)
+          git checkout -B _master_replica upstream/master
+
+          # Create sync branch from _master_replica
+          SYNC_BRANCH=sync/upstream-${{ github.run_id }}
+          git checkout -B "$SYNC_BRANCH" _master_replica
+
+          # Rebase sync branch onto my-master
+          echo "Rebasing $SYNC_BRANCH onto my-master"
+          git fetch origin my-master:refs/remotes/origin/my-master || true
+          git checkout -B "$SYNC_BRANCH" "$SYNC_BRANCH"
+          git rebase origin/my-master || true
+
+          # Remove upstream workflow files so GITHUB_TOKEN (no workflows scope) can push
+          if git ls-files --error-unmatch .github/workflows/ >/dev/null 2>&1; then
+            git rm -r --cached --ignore-unmatch .github/workflows/
+            git commit --allow-empty -m "chore: remove upstream workflow files from sync branch"
+          fi
+
+          # Push sync branch
+          git push --force-with-lease origin "$SYNC_BRANCH"
+
+      - name: Check if sync branch is ahead of my-master
+        id: check_ahead
+        run: |
+          git fetch origin my-master:refs/remotes/origin/my-master || true
+          SYNC_BRANCH=sync/upstream-${{ github.run_id }}
+          # Count commits sync branch is ahead of my-master
+          AHEAD=$(git rev-list --left-right --count origin/my-master...origin/$SYNC_BRANCH | awk '{print $2}')
+          echo "ahead=$AHEAD" >> $GITHUB_OUTPUT
+          echo "Commits ahead: $AHEAD"
+
+      - name: Check for existing PR
+        id: check_pr
+        if: steps.check_ahead.outputs.ahead != '0'
+        run: |
+          # Check if a PR from sync branch to my-master already exists
+          SYNC_BRANCH=sync/upstream-${{ github.run_id }}
+          PR_COUNT=$(gh pr list --head "$SYNC_BRANCH" --base my-master --state open --json number --jq 'length')
+          echo "pr_exists=$([ $PR_COUNT -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          if [ $PR_COUNT -gt 0 ]; then
+            PR_NUMBER=$(gh pr list --head "$SYNC_BRANCH" --base my-master --state open --json number -q '.[0].number')
+            echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create PR from sync branch to my-master
+        if: steps.check_ahead.outputs.ahead != '0' && steps.check_pr.outputs.pr_exists
+          == 'false'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: my-master
+          branch: sync/upstream-${{ github.run_id }}
+          title: "chore: sync from upstream QuantConnect/Lean"
+          body: |
+            Automated sync from upstream QuantConnect/Lean.
+
+            This PR updates `my-master` with the latest changes from upstream's `master` branch.
