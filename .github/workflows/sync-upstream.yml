@@ -30,6 +30,10 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Configure git identity required for rebase commits
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
           # Fetch all refs
           git fetch origin --prune
           git fetch upstream --prune
@@ -47,7 +51,13 @@ jobs:
           git checkout -B "$SYNC_BRANCH" "$SYNC_BRANCH"
           git rebase origin/my-master || true
 
-          # Push sync branch (avoid workflow files issue)
+          # Remove upstream workflow files so GITHUB_TOKEN (no workflows scope) can push
+          if git ls-files --error-unmatch .github/workflows/ >/dev/null 2>&1; then
+            git rm -r --cached --ignore-unmatch .github/workflows/
+            git commit --allow-empty -m "chore: remove upstream workflow files from sync branch"
+          fi
+
+          # Push sync branch
           git push --force-with-lease origin "$SYNC_BRANCH"
 
       - name: Check if sync branch is ahead of my-master
