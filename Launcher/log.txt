@@ -1,0 +1,141 @@
+2026-04-26T06:51:20.9517590Z TRACE:: Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v2.5.0.0 Mode: RELEASE (64bit) Host: Arifs-MacBook-Air
+2026-04-26T06:51:21.0393220Z TRACE:: Engine.Main(): Started 2:51 PM
+2026-04-26T06:51:48.9271530Z TRACE:: Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v2.5.0.0 Mode: RELEASE (64bit) Host: Arifs-MacBook-Air
+2026-04-26T06:51:49.1235590Z TRACE:: Engine.Main(): Started 2:51 PM
+2026-04-26T06:53:06.0048200Z TRACE:: Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v2.5.0.0 Mode: RELEASE (64bit) Host: Arifs-MacBook-Air
+2026-04-26T06:53:06.0997900Z TRACE:: Engine.Main(): Started 2:53 PM
+2026-04-26T06:54:55.0568350Z TRACE:: Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v2.5.0.0 Mode: RELEASE (64bit) Host: Arifs-MacBook-Air
+2026-04-26T06:54:55.1403520Z TRACE:: Engine.Main(): Started 2:54 PM
+2026-04-26T06:54:55.2572290Z TRACE:: JobQueue.NextJob(): Selected ../Algorithm.Python/BasicTemplateAlgorithm.py
+2026-04-26T06:54:55.4422200Z ERROR:: JobQueue.NextJob(): Error resolving BrokerageData for live job for brokerage InteractiveBrokersBrokerage System.InvalidOperationException: Sequence contains no matching element
+   at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at QuantConnect.Util.Composer.Single[T](Func`2 predicate) in Common/Util/Composer.cs:line 117
+   at QuantConnect.Queues.JobQueue.NextJob(String& algorithmPath) in Queues/JobQueue.cs:line 185
+2026-04-26T06:54:55.4574030Z TRACE:: JobQueue.NextJob(): Not able to fetch brokerage factory with name: InteractiveBrokersBrokerage
+2026-04-26T06:54:55.4905920Z TRACE:: Extensions.IsDirectoryEmpty(): directory '../../../Data/market-hours' not found or empty
+2026-04-26T06:58:03.3878300Z TRACE:: Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v2.5.0.0 Mode: RELEASE (64bit) Host: Arifs-MacBook-Air
+2026-04-26T06:58:03.4451500Z TRACE:: Engine.Main(): Started 2:58 PM
+2026-04-26T06:58:03.5253530Z TRACE:: JobQueue.NextJob(): Selected ../Algorithm.Python/BasicTemplateAlgorithm.py
+2026-04-26T06:58:03.6838520Z ERROR:: JobQueue.NextJob(): Error resolving BrokerageData for live job for brokerage InteractiveBrokersBrokerage System.InvalidOperationException: Sequence contains no matching element
+   at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at QuantConnect.Util.Composer.Single[T](Func`2 predicate) in Common/Util/Composer.cs:line 117
+   at QuantConnect.Queues.JobQueue.NextJob(String& algorithmPath) in Queues/JobQueue.cs:line 185
+2026-04-26T06:58:03.6919920Z TRACE:: JobQueue.NextJob(): Not able to fetch brokerage factory with name: InteractiveBrokersBrokerage
+2026-04-26T06:58:06.1315440Z TRACE:: AlgorithmManager.CreateTokenBucket(): Initializing LeakyBucket: Capacity: 120 RefillAmount: 18 TimeInterval: 1440
+2026-04-26T06:58:06.1494500Z TRACE:: Engine.Run(): Resource limits '0' CPUs. 2147483647 MB RAM.
+2026-04-26T06:58:06.1604290Z TRACE:: TextSubscriptionDataSourceReader.SetCacheSize(): Setting cache size to 71582788 items
+2026-04-26T06:58:06.1688280Z TRACE:: PythonInitializer.Initialize(): start...
+2026-04-26T06:58:06.2438530Z ERROR:: Loader.TryCreatePythonAlgorithm():  Python.Runtime.BadPythonDllException: Runtime.PythonDLL was not set or does not point to a supported Python runtime DLL. See pythonnet#embedding-python-in-net
+ ---> System.MissingMethodException: Failed to load symbol Py_IncRef: dlsym(RTLD_DEFAULT, Py_IncRef): symbol not found
+   at Python.Runtime.Platform.PosixLoader.GetFunction(IntPtr dllHandle, String name)
+   at Python.Runtime.Runtime.Delegates.GetFunctionByName(String functionName, IntPtr libraryHandle)
+   --- End of inner exception stack trace ---
+   at Python.Runtime.Runtime.TryUsingDll[T](Func`1 op)
+   at Python.Runtime.Runtime.Initialize(Boolean initSigs)
+   at Python.Runtime.PythonEngine.Initialize(IEnumerable`1 args, Boolean setSysArgv, Boolean initSigs)
+   at Python.Runtime.PythonEngine.Initialize(Boolean setSysArgv, Boolean initSigs)
+   at Python.Runtime.PythonEngine.Initialize()
+   at QuantConnect.Python.PythonInitializer.Initialize(Boolean beginAllowThreads) in Common/Python/PythonInitializer.cs:line 56
+   at QuantConnect.AlgorithmFactory.Loader.TryCreatePythonAlgorithm(String assemblyPath, IAlgorithm& algorithmInstance, String& errorMessage) in AlgorithmFactory/Loader.cs:line 171
+2026-04-26T06:58:06.2469050Z ERROR:: Engine.Run():  QuantConnect.Lean.Engine.Setup.AlgorithmSetupException: During the algorithm initialization, the following exception has occurred: Loader.TryCreatePythonAlgorithm(): Unable to import python module ../Algorithm.Python/BasicTemplateAlgorithm.py. Runtime.PythonDLL was not set or does not point to a supported Python runtime DLL. See pythonnet#embedding-python-in-net
+   at QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler.CreateAlgorithmInstance(AlgorithmNodePacket algorithmNodePacket, String assemblyPath) in Engine/Setup/BrokerageSetupHandler.cs:line 108
+   at QuantConnect.Lean.Engine.Engine.Run(AlgorithmNodePacket job, AlgorithmManager manager, String assemblyPath, WorkerThread workerThread) in Engine/Engine.cs:line 119
+2026-04-26T06:58:06.2480000Z TRACE:: JOB HANDLERS:
+         DataFeed:             QuantConnect.Lean.Engine.DataFeeds.LiveTradingDataFeed
+         Setup:                QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler
+         RealTime:             QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler
+         Results:              QuantConnect.Lean.Engine.Results.LiveTradingResultHandler
+         Transactions:         QuantConnect.Lean.Engine.TransactionHandlers.BrokerageTransactionHandler
+         Object Store:         QuantConnect.Lean.Engine.Storage.LocalObjectStore
+         History Provider:     
+         Brokerage:            
+         Data Provider:        QuantConnect.Lean.Engine.DataFeeds.DefaultDataProvider
+
+2026-04-26T06:58:06.2600150Z TRACE:: StopSafely(): Waiting for 'Result Thread' thread to stop...
+2026-04-26T06:58:06.2602920Z ERROR:: Algorithm.Initialize() Error: During the algorithm initialization, the following exception has occurred: Loader.TryCreatePythonAlgorithm(): Unable to import python module ../Algorithm.Python/BasicTemplateAlgorithm.py. Runtime.PythonDLL was not set or does not point to a supported Python runtime DLL. See https://github.com/pythonnet/pythonnet#embedding-python-in-net Stack Trace: During the algorithm initialization, the following exception has occurred: Loader.TryCreatePythonAlgorithm(): Unable to import python module ../Algorithm.Python/BasicTemplateAlgorithm.py. Runtime.PythonDLL was not set or does not point to a supported Python runtime DLL. See https://github.com/pythonnet/pythonnet#embedding-python-in-net
+ During the algorithm initialization, the following exception has occurred: Loader.TryCreatePythonAlgorithm(): Unable to import python module ../Algorithm.Python/BasicTemplateAlgorithm.py. Runtime.PythonDLL was not set or does not point to a supported Python runtime DLL. See https://github.com/pythonnet/pythonnet#embedding-python-in-net
+2026-04-26T06:58:06.2652540Z TRACE:: LiveTradingResultHandler.Run(): Ending Thread...
+2026-04-26T06:58:06.2697240Z TRACE:: LiveTradingResultHandler.SendFinalResult(): Starting...
+2026-04-26T06:58:06.5740830Z TRACE:: LiveTradingResultHandler.SendFinalResult(): Finished storing results. Start sending...
+2026-04-26T06:58:06.5741720Z TRACE:: LiveTradingResultHandler.SendFinalResult(): Ended
+2026-04-26T06:58:06.5748640Z TRACE:: Engine.Run(): Disposing of setup handler...
+2026-04-26T06:58:06.5755410Z TRACE:: BrokerageSetupHandler.Setup(): did not find any data queue handler to dispose
+2026-04-26T06:58:06.5755780Z TRACE:: Engine.Main(): Analysis Completed and Results Posted.
+2026-04-26T06:59:02.5091440Z TRACE:: Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v2.5.0.0 Mode: RELEASE (64bit) Host: Arifs-MacBook-Air
+2026-04-26T06:59:02.5485110Z TRACE:: Engine.Main(): Started 2:59 PM
+2026-04-26T06:59:02.5962710Z TRACE:: JobQueue.NextJob(): Selected ../Algorithm.Python/BasicTemplateAlgorithm.py
+2026-04-26T06:59:02.7842070Z ERROR:: JobQueue.NextJob(): Error resolving BrokerageData for live job for brokerage InteractiveBrokersBrokerage System.InvalidOperationException: Sequence contains no matching element
+   at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at QuantConnect.Util.Composer.Single[T](Func`2 predicate) in Common/Util/Composer.cs:line 117
+   at QuantConnect.Queues.JobQueue.NextJob(String& algorithmPath) in Queues/JobQueue.cs:line 185
+2026-04-26T06:59:02.7984270Z TRACE:: JobQueue.NextJob(): Not able to fetch brokerage factory with name: InteractiveBrokersBrokerage
+2026-04-26T06:59:04.0340680Z TRACE:: AlgorithmManager.CreateTokenBucket(): Initializing LeakyBucket: Capacity: 120 RefillAmount: 18 TimeInterval: 1440
+2026-04-26T06:59:04.0434520Z TRACE:: Engine.Run(): Resource limits '0' CPUs. 2147483647 MB RAM.
+2026-04-26T06:59:04.0438180Z TRACE:: TextSubscriptionDataSourceReader.SetCacheSize(): Setting cache size to 71582788 items
+2026-04-26T06:59:04.0475330Z TRACE:: PythonInitializer.Initialize(): start...
+2026-04-26T06:59:05.6134390Z TRACE:: PythonInitializer.Initialize(): ended
+2026-04-26T06:59:05.6160700Z TRACE:: AlgorithmPythonWrapper(): Python version 3.11.13 (main, Jun  5 2025, 08:25:22) [Clang 14.0.6 ]: Importing python module BasicTemplateAlgorithm
+2026-04-26T06:59:05.6805200Z ERROR:: Loader.TryCreatePythonAlgorithm():  System.Exception: AlgorithmPythonWrapper(): name 'QCAlgorithm' is not defined
+  at <module>
+    class BasicTemplateAlgorithm(QCAlgorithm):
+                                 ^^^^^^^^^^^
+ in BasicTemplateAlgorithm.py: line 23
+ name 'QCAlgorithm' is not defined
+   at QuantConnect.AlgorithmFactory.Python.Wrappers.AlgorithmPythonWrapper..ctor(String moduleName) in AlgorithmFactory/Python/Wrappers/AlgorithmPythonWrapper.cs:line 188
+   at QuantConnect.AlgorithmFactory.Loader.TryCreatePythonAlgorithm(String assemblyPath, IAlgorithm& algorithmInstance, String& errorMessage) in AlgorithmFactory/Loader.cs:line 173
+2026-04-26T06:59:05.6829970Z ERROR:: Engine.Run():  QuantConnect.Lean.Engine.Setup.AlgorithmSetupException: During the algorithm initialization, the following exception has occurred: Loader.TryCreatePythonAlgorithm(): Unable to import python module ../Algorithm.Python/BasicTemplateAlgorithm.py. AlgorithmPythonWrapper(): name 'QCAlgorithm' is not defined
+  at <module>
+    class BasicTemplateAlgorithm(QCAlgorithm):
+                                 ^^^^^^^^^^^
+ in BasicTemplateAlgorithm.py: line 23
+ name 'QCAlgorithm' is not defined
+   at QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler.CreateAlgorithmInstance(AlgorithmNodePacket algorithmNodePacket, String assemblyPath) in Engine/Setup/BrokerageSetupHandler.cs:line 108
+   at QuantConnect.Lean.Engine.Engine.Run(AlgorithmNodePacket job, AlgorithmManager manager, String assemblyPath, WorkerThread workerThread) in Engine/Engine.cs:line 119
+2026-04-26T06:59:05.6857390Z TRACE:: JOB HANDLERS:
+         DataFeed:             QuantConnect.Lean.Engine.DataFeeds.LiveTradingDataFeed
+         Setup:                QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler
+         RealTime:             QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler
+         Results:              QuantConnect.Lean.Engine.Results.LiveTradingResultHandler
+         Transactions:         QuantConnect.Lean.Engine.TransactionHandlers.BrokerageTransactionHandler
+         Object Store:         QuantConnect.Lean.Engine.Storage.LocalObjectStore
+         History Provider:     
+         Brokerage:            
+         Data Provider:        QuantConnect.Lean.Engine.DataFeeds.DefaultDataProvider
+
+2026-04-26T06:59:05.6897760Z ERROR:: Algorithm.Initialize() Error: During the algorithm initialization, the following exception has occurred: Loader.TryCreatePythonAlgorithm(): Unable to import python module ../Algorithm.Python/BasicTemplateAlgorithm.py. AlgorithmPythonWrapper(): name 'QCAlgorithm' is not defined
+  at <module>
+    class BasicTemplateAlgorithm(QCAlgorithm):
+                                 ^^^^^^^^^^^
+ in BasicTemplateAlgorithm.py: line 23
+ name 'QCAlgorithm' is not defined Stack Trace: During the algorithm initialization, the following exception has occurred: Loader.TryCreatePythonAlgorithm(): Unable to import python module ../Algorithm.Python/BasicTemplateAlgorithm.py. AlgorithmPythonWrapper(): name 'QCAlgorithm' is not defined
+  at <module>
+    class BasicTemplateAlgorithm(QCAlgorithm):
+                                 ^^^^^^^^^^^
+ in BasicTemplateAlgorithm.py: line 23
+ name 'QCAlgorithm' is not defined
+ During the algorithm initialization, the following exception has occurred: Loader.TryCreatePythonAlgorithm(): Unable to import python module ../Algorithm.Python/BasicTemplateAlgorithm.py. AlgorithmPythonWrapper(): name 'QCAlgorithm' is not defined
+  at <module>
+    class BasicTemplateAlgorithm(QCAlgorithm):
+                                 ^^^^^^^^^^^
+ in BasicTemplateAlgorithm.py: line 23
+ name 'QCAlgorithm' is not defined
+2026-04-26T06:59:05.6902670Z TRACE:: StopSafely(): Waiting for 'Result Thread' thread to stop...
+2026-04-26T06:59:05.6996340Z TRACE:: LiveTradingResultHandler.Run(): Ending Thread...
+2026-04-26T06:59:05.7010160Z TRACE:: LiveTradingResultHandler.SendFinalResult(): Starting...
+2026-04-26T06:59:05.9562280Z TRACE:: LiveTradingResultHandler.SendFinalResult(): Finished storing results. Start sending...
+2026-04-26T06:59:05.9572290Z TRACE:: LiveTradingResultHandler.SendFinalResult(): Ended
+2026-04-26T06:59:05.9576780Z TRACE:: Engine.Run(): Disposing of setup handler...
+2026-04-26T06:59:05.9594800Z TRACE:: BrokerageSetupHandler.Setup(): did not find any data queue handler to dispose
+2026-04-26T06:59:05.9595560Z TRACE:: Engine.Main(): Analysis Completed and Results Posted.
+2026-04-26T07:01:55.1272250Z TRACE:: Engine.Main(): Packet removed from queue: BasicTemplateAlgorithm
+2026-04-26T07:01:55.1431760Z TRACE:: LeanEngineSystemHandlers.Dispose(): start...
+2026-04-26T07:01:55.2088750Z TRACE:: LeanEngineSystemHandlers.Dispose(): Disposed of system handlers.
+2026-04-26T07:01:55.2230190Z TRACE:: LeanEngineAlgorithmHandlers.Dispose(): start...
+2026-04-26T07:01:55.2266830Z TRACE:: LocalObjectStore.Dispose(): start...
+2026-04-26T07:01:55.2267340Z TRACE:: LocalObjectStore.Dispose(): end
+2026-04-26T07:01:55.2273180Z TRACE:: LeanEngineAlgorithmHandlers.Dispose(): Disposed of algorithm handlers.
+2026-04-26T07:44:22.1388300Z TRACE:: Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v2.5.0.0 Mode: RELEASE (64bit) Host: Arifs-MacBook-Air
+2026-04-26T07:44:22.1676280Z TRACE:: Engine.Main(): Started 3:44 PM
