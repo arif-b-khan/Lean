@@ -19,12 +19,12 @@
 ## Phase 3: Validation
 
 - [x] T008 Add automated tests for successful secret loading and missing-secret fail-fast behavior in `Tests/`
-- [ ] T009 Add regression test coverage ensuring no secret values are emitted to logs
+- [x] T009 Add regression test coverage ensuring no secret values are emitted to logs
 
 ## Phase 4: Integration & Docs
 
-- [ ] T010 Add CI secret scanning workflow in `.github/workflows/`
-- [ ] T011 Update contributor documentation for `dotnet user-secrets` setup and required credentials
+- [x] T010 Add CI secret scanning workflow in `.github/workflows/`
+- [x] T011 Update contributor documentation for `dotnet user-secrets` setup and required credentials
 
 ## Dependencies & Order
 

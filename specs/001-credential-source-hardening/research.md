@@ -24,7 +24,28 @@ Date: 2026-05-06
 
 ## Next Implementation Steps
 
-1. Remove credential key entries from tracked runtime config files where policy requires key removal.
-2. Load these values from `.NET user-secrets` at runtime.
-3. Fail fast at startup for missing required keys using `required-credentials.json`.
-4. Add regression tests and CI secret scanning.
+1. ✅ Remove credential key entries from tracked runtime config files where policy requires key removal.
+2. ✅ Load these values from `.NET user-secrets` at runtime.
+3. ✅ Fail fast at startup for missing required keys using `required-credentials.json`.
+4. ✅ Add regression tests and CI secret scanning.
+
+## Completed Implementation
+
+- **T009**: Added 6 comprehensive regression tests covering:
+  - Missing required credentials with no value leakage
+  - Loading only required keys from configuration
+  - Manifest file not found errors
+  - Empty manifest detection
+  - Malformed JSON handling
+  - Successful loading with valid manifest
+
+- **T010**: Added GitHub Actions secret scanning workflow (`secret-scanning.yml`) with:
+  - `detect-secrets` tool for pattern-based secret detection
+  - TruffleHog integration for verified secret scanning
+  - Configurable scanning for PR changes and push events
+  - False positive filtering for example/test files
+
+- **T011**: Updated contributor documentation:
+  - Created `SECRETS_SETUP.md` with comprehensive setup guide
+  - Added credential setup section to `CONTRIBUTING.md`
+  - Documented dotnet user-secrets usage, troubleshooting, and best practices
