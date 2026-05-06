@@ -26,7 +26,7 @@ jobs:
           # fetch all branches and tags from upstream
           git fetch upstream --prune --tags
 
-- name: Create/update master replica and sync branch
+      - name: Create/update master replica and sync branch
         run: |
           set -euo pipefail
 
@@ -76,7 +76,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create PR from sync branch to my-master
-        if: steps.check_ahead.outputs.ahead != '0' && steps.check_pr.outputs.pr_exists == 'false'
+        if: steps.check_ahead.outputs.ahead != '0' && steps.check_pr.outputs.pr_exists
+          == 'false'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -85,5 +86,5 @@ jobs:
           title: "chore: sync from upstream QuantConnect/Lean"
           body: |
             Automated sync from upstream QuantConnect/Lean.
-            
+
             This PR updates `my-master` with the latest changes from upstream's `master` branch.
