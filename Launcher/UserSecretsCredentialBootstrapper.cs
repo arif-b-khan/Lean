@@ -69,12 +69,12 @@ namespace QuantConnect.Lean.Launcher
                 var message = "Missing credentials in .NET user secrets: " + string.Join(", ", missingKeys) + Environment.NewLine +
                     "Configure credentials using dotnet user-secrets, for example:" + Environment.NewLine +
                     "dotnet user-secrets --project Launcher/QuantConnect.Lean.Launcher.csproj set \"<key>\" \"<value>\"";
-                
+
                 if (requireAllCredentials)
                 {
                     throw new InvalidOperationException(message);
                 }
-                
+
                 // In development/test environments, just warn about missing credentials
                 Console.WriteLine("WARNING: " + message);
             }
