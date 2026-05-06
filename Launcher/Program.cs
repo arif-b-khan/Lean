@@ -57,6 +57,9 @@ namespace QuantConnect.Lean.Launcher
                 Config.MergeCommandLineArgumentsWithConfiguration(LeanArgumentParser.ParseArguments(args));
             }
 
+            var secrets = UserSecretsCredentialBootstrapper.LoadAndValidateRequiredCredentials();
+            Config.MergeSecretsWithConfiguration(secrets);
+
             //Name thread for the profiler:
             Thread.CurrentThread.Name = "Algorithm Analysis Thread";
 

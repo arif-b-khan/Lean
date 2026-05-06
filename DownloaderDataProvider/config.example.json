@@ -9,7 +9,6 @@
 
   // To get your api access token go to quantconnect.com/account
   "job-user-id": "0",
-  "api-access-token": "",
   "job-organization-id": "",
 
   // Data downloader provider

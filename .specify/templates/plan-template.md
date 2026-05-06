@@ -31,7 +31,18 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- Determinism: Does the plan identify behavior changes and define regression validation for
+  deterministic outcomes?
+- Compatibility: Does the plan document public contract impact and migration/deprecation steps
+  for any breaking change?
+- Testing: Does the plan define required automated test coverage (unit/integration/regression)
+  for each production change?
+- Performance: Does the plan assess runtime/memory impact for hot-path changes and specify
+  mitigation where needed?
+- Observability: Does the plan include diagnostics/error-path coverage and safe handling of
+  sensitive operational data?
+- Secret Hygiene: Does the plan ensure credentials are not stored in source-controlled code
+  or configuration and define secure secret injection at runtime/CI?
 
 ## Project Structure
 
