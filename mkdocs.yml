@@ -1,0 +1,12 @@
+site_name: Lean Engineering Docs
+site_description: Project documentation and generated feature documents
+site_url: http://127.0.0.1:8000
+repo_name: QuantConnect/Lean
+repo_url: https://github.com/QuantConnect/Lean
+
+nav:
+  - Home: Docs/index.md
+  - Generated Docs:
+      - Overview: Docs/generated/index.md
+
+docs_dir: .
