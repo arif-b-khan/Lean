@@ -307,6 +307,12 @@ namespace QuantConnect.Lean.Engine.Results
         protected IMapFileProvider MapFileProvider { get; set; }
 
         /// <summary>
+        /// The tool tracking the engine's performance counters, used by the in-run
+        /// algorithm speed analysis. May be null when the host doesn't track performance.
+        /// </summary>
+        protected PerformanceTrackingTool PerformanceTrackingTool { get; set; }
+
+        /// <summary>
         /// Creates a new instance
         /// </summary>
         protected BaseResultsHandler()
@@ -498,6 +504,7 @@ namespace QuantConnect.Lean.Engine.Results
             _updateRunner.Start();
             State["Hostname"] = _hostName;
             MapFileProvider = parameters.MapFileProvider;
+            PerformanceTrackingTool = parameters.PerformanceTrackingTool;
 
             SerializerSettings = new()
             {
@@ -653,6 +660,38 @@ namespace QuantConnect.Lean.Engine.Results
         /// <remarks>Useful so that live trading implementation can freeze the returned value if there is no user exchange open
         /// so we ignore extended market hours updates</remarks>
         protected decimal GetPortfolioValue() => _portfolioValue.Value;
+
+        /// <summary>
+        /// Event fired when the algorithm's warm-up period finishes, right before the algorithm's
+        /// <see cref="IAlgorithm.OnWarmupFinished"/> callback is triggered.
+        /// Re-captures the starting portfolio value and dependent baselines, since the value captured
+        /// at setup time used currency conversion rates seeded at the warm-up start
+        /// </summary>
+        public virtual void OnWarmupFinished()
+        {
+            // warm-up has brought the currency conversion rates up to date, so now both holdings prices
+            // and conversion rates are current and we can capture the real starting portfolio value
+            UpdatePortfolioValues(Algorithm.UtcTime, force: true);
+            var currentPortfolioValue = GetPortfolioValue();
+            // only reassign values that actually changed, so unchanged ones keep their original decimal
+            // scale and their statistics string representation
+            if (CumulativeMaxPortfolioValue != currentPortfolioValue)
+            {
+                CumulativeMaxPortfolioValue = currentPortfolioValue;
+            }
+            if (DailyPortfolioValue != currentPortfolioValue)
+            {
+                DailyPortfolioValue = currentPortfolioValue;
+            }
+            if (StartingPortfolioValue != currentPortfolioValue)
+            {
+                StartingPortfolioValue = currentPortfolioValue;
+                // discard any equity bar built during warm-up so the first sample opens at the re-captured value
+                CurrentAlgorithmEquity = null;
+                Log.Trace($"{GetType().Name}.OnWarmupFinished(): " +
+                    $"Re-captured starting portfolio value after warm-up: {StartingPortfolioValue.ToStringInvariant()}");
+            }
+        }
 
         /// <summary>
         /// Gets the current benchmark value
@@ -1123,6 +1162,18 @@ namespace QuantConnect.Lean.Engine.Results
         }
 
         /// <summary>
+        /// Prefixes the given message with the algorithm time, matching the format used by
+        /// the algorithm's own log messages (see <see cref="IAlgorithm.Log"/>). Used to normalize
+        /// the timestamp across all algorithm logs and messages.
+        /// </summary>
+        /// <param name="message">The message to format</param>
+        /// <returns>The message prefixed with the algorithm time, or the original message if the algorithm is not yet available</returns>
+        protected string FormatMessage(string message)
+        {
+            return Algorithm != null ? message.PrefixWithAlgorithmTime(Algorithm.Time) : message;
+        }
+
+        /// <summary>
         /// Save an algorithm message to the log store. Uses a different timestamped method of adding messaging to interweve debug and logging messages.
         /// </summary>
         /// <param name="message">String message to store</param>
@@ -1171,7 +1222,7 @@ namespace QuantConnect.Lean.Engine.Results
                         {
                             _packetDroppedWarning = true;
                             // this shouldn't happen in most cases, queue limit is high and consumed often but just in case let's not silently drop packets without a warning
-                            Messages.Enqueue(new HandledErrorPacket(AlgorithmId, "Your algorithm messaging has been rate limited to prevent browser flooding."));
+                            Messages.Enqueue(new HandledErrorPacket(AlgorithmId, FormatMessage("Your algorithm messaging has been rate limited to prevent browser flooding.")));
                         }
                         //if too many in the queue already skip the logging and drop the messages
                         continue;

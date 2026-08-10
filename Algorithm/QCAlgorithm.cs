@@ -107,6 +107,7 @@ namespace QuantConnect.Algorithm
         private bool _tagsLimitReachedLogSent;
         private bool _tagsCollectionTruncatedLogSent;
         private bool _hasShownDailyConsolidationWarning;
+        private bool _indexOptionTickerAsUnderlyingWarningSent;
         private DateTime _start;
         private DateTime _startDate;   //Default start and end dates.
         private DateTime _endDate;     //Default end to yesterday
@@ -1315,7 +1316,7 @@ namespace QuantConnect.Algorithm
         {
             if (_locked)
             {
-                throw new InvalidOperationException("Algorithm.SetTimeZone(): Cannot change time zone after algorithm running.");
+                throw new InvalidOperationException(Messages.QCAlgorithm.SetTimeZoneAlreadyRunning());
             }
 
             if (timeZone == null) throw new ArgumentNullException(nameof(timeZone));
@@ -1450,7 +1451,7 @@ namespace QuantConnect.Algorithm
         {
             if (_locked)
             {
-                throw new InvalidOperationException("Algorithm.SetBenchmark(): Cannot change Benchmark after algorithm initialized.");
+                throw new InvalidOperationException(Messages.QCAlgorithm.SetBenchmarkAlreadyInitialized());
             }
 
             var market = GetMarket(null, symbol, securityType, defaultMarket: Market.USA);
@@ -1503,7 +1504,7 @@ namespace QuantConnect.Algorithm
         {
             if (_locked)
             {
-                throw new InvalidOperationException("Algorithm.SetBenchmark(): Cannot change Benchmark after algorithm initialized.");
+                throw new InvalidOperationException(Messages.QCAlgorithm.SetBenchmarkAlreadyInitialized());
             }
 
             // Create our security benchmark
@@ -1522,7 +1523,7 @@ namespace QuantConnect.Algorithm
         {
             if (_locked)
             {
-                throw new InvalidOperationException("Algorithm.SetBenchmark(): Cannot change Benchmark after algorithm initialized.");
+                throw new InvalidOperationException(Messages.QCAlgorithm.SetBenchmarkAlreadyInitialized());
             }
 
             Benchmark = new FuncBenchmark(benchmark);
@@ -1599,8 +1600,7 @@ namespace QuantConnect.Algorithm
         {
             if (_locked)
             {
-                throw new InvalidOperationException("Algorithm.SetAccountCurrency(): " +
-                    "Cannot change AccountCurrency after algorithm initialized.");
+                throw new InvalidOperationException(Messages.QCAlgorithm.SetAccountCurrencyAlreadyInitialized());
             }
 
             if (startingCash == null)
@@ -1653,7 +1653,7 @@ namespace QuantConnect.Algorithm
             }
             else
             {
-                throw new InvalidOperationException("Algorithm.SetCash(): Cannot change cash available after algorithm initialized.");
+                throw new InvalidOperationException(Messages.QCAlgorithm.SetCashAlreadyInitialized());
             }
         }
 
@@ -1672,7 +1672,7 @@ namespace QuantConnect.Algorithm
             }
             else
             {
-                throw new InvalidOperationException("Algorithm.SetCash(): Cannot change cash available after algorithm initialized.");
+                throw new InvalidOperationException(Messages.QCAlgorithm.SetCashAlreadyInitialized());
             }
         }
 
@@ -1778,7 +1778,7 @@ namespace QuantConnect.Algorithm
             }
             else
             {
-                throw new InvalidOperationException("Algorithm.SetStartDate(): Cannot change start date after algorithm initialized.");
+                throw new InvalidOperationException(Messages.QCAlgorithm.SetStartDateAlreadyInitialized());
             }
         }
 
@@ -1797,7 +1797,7 @@ namespace QuantConnect.Algorithm
             //1. Check not locked already:
             if (_locked)
             {
-                throw new InvalidOperationException("Algorithm.SetEndDate(): Cannot change end date after algorithm initialized.");
+                throw new InvalidOperationException(Messages.QCAlgorithm.SetEndDateAlreadyInitialized());
             }
 
             //Validate:
@@ -2310,7 +2310,24 @@ namespace QuantConnect.Algorithm
 
         public IndexOption AddIndexOption(string underlying, Resolution? resolution = null, string market = null, bool fillForward = true)
         {
-            return AddIndexOption(underlying, null, resolution, market, fillForward);
+            string targetOption = null;
+            // Some non-standard index options, like the weekly SPXW, are options on an index (SPX) but have their own ticker.
+            // If one of those option tickers is provided as the underlying, e.g. AddIndexOption("SPXW"), map it to the
+            // actual underlying index and use the provided ticker as the target option. Otherwise a data-less index security
+            // would be created and used as the underlying of the option contracts, which would never get a price
+            var underlyingTicker = IndexOptionSymbol.MapToUnderlying(underlying);
+            if (!underlyingTicker.Equals(underlying, StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (!_indexOptionTickerAsUnderlyingWarningSent)
+                {
+                    _indexOptionTickerAsUnderlyingWarningSent = true;
+                    Debug($"Warning: '{underlying}' is an index option ticker, using index '{underlyingTicker}' as the underlying and '{underlying}' as the target option.");
+                }
+                targetOption = underlying;
+                underlying = underlyingTicker;
+            }
+
+            return AddIndexOption(underlying, targetOption, resolution, market, fillForward);
         }
 
         /// <summary>
@@ -3818,7 +3835,7 @@ namespace QuantConnect.Algorithm
 
         private string FormatLog(string message)
         {
-            return $"{Time.ToStringInvariant(DateFormat.UI)} {message}";
+            return message.PrefixWithAlgorithmTime(Time);
         }
     }
 }

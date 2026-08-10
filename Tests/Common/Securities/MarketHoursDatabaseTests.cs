@@ -128,6 +128,36 @@ namespace QuantConnect.Tests.Common.Securities
             Assert.AreEqual(earlyCloseTime, equityHours.EarlyCloses[date]);
         }
 
+        [Test]
+        public void CorrectlyReadsUsEquity2028SpecialHours()
+        {
+            var exchangeHours = MarketHoursDatabase.FromDataFolder()
+                .GetExchangeHours(Market.USA, null, SecurityType.Equity);
+
+            var holidays = new[]
+            {
+                new DateTime(2028, 1, 17),
+                new DateTime(2028, 2, 21),
+                new DateTime(2028, 4, 14),
+                new DateTime(2028, 5, 29),
+                new DateTime(2028, 6, 19),
+                new DateTime(2028, 7, 4),
+                new DateTime(2028, 9, 4),
+                new DateTime(2028, 11, 23),
+                new DateTime(2028, 12, 25)
+            };
+
+            foreach (var holiday in holidays)
+            {
+                Assert.IsTrue(exchangeHours.Holidays.Contains(holiday));
+            }
+            Assert.IsFalse(exchangeHours.Holidays.Contains(new DateTime(2028, 1, 1)));
+
+            var earlyCloseTime = new TimeSpan(13, 0, 0);
+            Assert.AreEqual(earlyCloseTime, exchangeHours.EarlyCloses[new DateTime(2028, 7, 3)]);
+            Assert.AreEqual(earlyCloseTime, exchangeHours.EarlyCloses[new DateTime(2028, 11, 24)]);
+        }
+
         [TestCase("AUP", Market.COMEX, true)]
         [TestCase("AA6", Market.NYMEX, true)]
         [TestCase("6A", Market.CME, false)]
@@ -458,6 +488,27 @@ namespace QuantConnect.Tests.Common.Securities
             Assert.DoesNotThrow(() => database.UpdateDataFolderDatabase());
             Assert.IsTrue(database.TryGetEntry(Market.USA, ticker, securityType, out returnedEntry));
             Assert.AreEqual(returnedEntry, entry);
+        }
+
+        [TestCase("VIX3M")]
+        [TestCase("VVIX")]
+        [TestCase("TESTIDX")]
+        public void CorrectlyReadsCBOEIndexMarketHours(string ticker)
+        {
+            var db = MarketHoursDatabase.FromDataFolder();
+            var symbol = Symbol.Create(ticker, SecurityType.Index, Market.CBOE);
+
+            Assert.IsTrue(db.TryGetEntry(Market.CBOE, symbol, SecurityType.Index, out var entry));
+            Assert.AreEqual(TimeZones.Chicago, entry.ExchangeHours.TimeZone);
+            Assert.AreEqual(TimeZones.NewYork, entry.DataTimeZone);
+
+            var weekdays = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday };
+            foreach (var day in weekdays)
+            {
+                var marketSegment = entry.ExchangeHours.MarketHours[day].Segments.First(s => s.State == MarketHoursState.Market);
+                Assert.AreEqual(new TimeSpan(8, 30, 0), marketSegment.Start);
+                Assert.AreEqual(new TimeSpan(15, 15, 0), marketSegment.End);
+            }
         }
 
         [Test]
