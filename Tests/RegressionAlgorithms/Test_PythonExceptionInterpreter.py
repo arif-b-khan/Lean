@@ -23,8 +23,23 @@ class Test_PythonExceptionInterpreter(QCAlgorithm):
     def no_method_match(self):
         self.set_cash('SPY')
 
+    def no_method_match_rsi(self):
+        symbol = Symbol.create('SPY', SecurityType.EQUITY, Market.USA)
+        # The third positional argument should be a MovingAverageType, not a Resolution,
+        # so no RSI overload matches the given arguments.
+        self._indicator = self.rsi(symbol, 15, Resolution.DAILY)
+
     def unsupported_operand(self):
         x = None + "Pepe Grillo"
+
+    def module_not_found(self):
+        from MissingClrNamespace.Distributions import Normal
+
+    def multiple_inheritance(self):
+        class MultipleInheritanceMixin:
+            pass
+        class MultipleInheritanceAlgorithm(QCAlgorithm, MultipleInheritanceMixin):
+            pass
 
     def zero_division_error(self):
         x = 1 / 0

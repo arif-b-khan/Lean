@@ -670,6 +670,97 @@ namespace QuantConnect.Tests.Common.Securities
             Assert.IsTrue(hasSufficientBuyingPowerResult.IsSufficient);
         }
 
+        [Test]
+        public void FullyCoveredOverlappingDebitSpreadsBookRequiresNoMaintenanceMargin()
+        {
+            SetUpOverlappingBullCallSpreads();
+
+            Assert.AreEqual(2, _portfolio.Positions.Groups.Count);
+            Assert.IsTrue(_portfolio.Positions.Groups.All(group =>
+                group.BuyingPowerModel.ToString() == OptionStrategyDefinitions.BullCallSpread.Name),
+                string.Join(", ", _portfolio.Positions.Groups.Select(group => group.BuyingPowerModel.ToString())));
+
+            // every short call is covered by a long call at a lower strike, so no margin is required beyond the premium already paid.
+            // the greedy leg-count-descending matching used to carve this book into a bull call ladder plus an unmatched long,
+            // charging naked call margin (premium + 20% of the underlying value) for the ladder's uncovered short leg
+            Assert.AreEqual(0, _portfolio.TotalMarginUsed);
+        }
+
+        [Test]
+        public void OverlappingDebitSpreadOrderRequiresOnlyPremium()
+        {
+            var (_, call600, _, call605) = SetUpOverlappingBullCallSpreads(holdSecondSpread: false);
+
+            // enough cash for the new spread's ~$295 net debit, far below the ~$12k naked call margin the
+            // ladder re-grouping of the combined book used to charge for this defined-risk order
+            _algorithm.SetCash(2000);
+
+            var groupOrderManager = new GroupOrderManager(1, 2, 1);
+            var orders = new List<Order>
+            {
+                Order.CreateOrder(new SubmitOrderRequest(OrderType.ComboMarket, SecurityType.Option, call600.Symbol,
+                    1m.GetOrderLegGroupQuantity(groupOrderManager), 0, 0, _algorithm.Time, "", groupOrderManager: groupOrderManager)),
+                Order.CreateOrder(new SubmitOrderRequest(OrderType.ComboMarket, SecurityType.Option, call605.Symbol,
+                    (-1m).GetOrderLegGroupQuantity(groupOrderManager), 0, 0, _algorithm.Time, "", groupOrderManager: groupOrderManager))
+            };
+
+            Assert.IsTrue(_portfolio.Positions.TryCreatePositionGroup(orders, out var positionGroup));
+
+            var result = positionGroup.BuyingPowerModel.HasSufficientBuyingPowerForOrder(
+                new HasSufficientPositionGroupBuyingPowerForOrderParameters(_portfolio, positionGroup, orders));
+
+            Assert.IsTrue(result.IsSufficient, result.Reason);
+        }
+
+        [Test]
+        public void LongOnlyOrderAgainstCoveredSpreadBookIsNotChargedShortMargin()
+        {
+            SetUpOverlappingBullCallSpreads();
+
+            var call610 = _algorithm.AddOptionContract(Symbols.CreateOptionSymbol("SPY", OptionRight.Call, 610, new DateTime(2025, 2, 21)));
+            call610.SetMarketPrice(new Tick { Value = 2.28m });
+
+            // enough cash for the long call's $228 premium, its maximum risk. re-grouping artifacts used to
+            // charge this long-only order the naked margin of a short leg it doesn't introduce
+            _algorithm.SetCash(2000);
+
+            var order = Order.CreateOrder(new SubmitOrderRequest(OrderType.Market, SecurityType.Option, call610.Symbol, 1, 0, 0,
+                _algorithm.Time, ""));
+            var result = _portfolio.HasSufficientBuyingPowerForOrder(new List<Order> { order });
+
+            Assert.IsTrue(result.IsSufficient, result.Reason);
+        }
+
+        /// <summary>
+        /// Sets up a book of two overlapping SPY bull call spreads with interleaved strikes and the same expiration,
+        /// long 598/short 603 and long 600/short 605, optionally holding only the first spread
+        /// </summary>
+        private (Option call598, Option call600, Option call603, Option call605) SetUpOverlappingBullCallSpreads(bool holdSecondSpread = true)
+        {
+            _equity.SetMarketPrice(new Tick { Value = 600.40m });
+
+            var expiry = new DateTime(2025, 2, 21);
+            var call598 = _algorithm.AddOptionContract(Symbols.CreateOptionSymbol("SPY", OptionRight.Call, 598, expiry));
+            call598.SetMarketPrice(new Tick { Value = 8.11m });
+            var call600 = _algorithm.AddOptionContract(Symbols.CreateOptionSymbol("SPY", OptionRight.Call, 600, expiry));
+            call600.SetMarketPrice(new Tick { Value = 6.72m });
+            var call603 = _algorithm.AddOptionContract(Symbols.CreateOptionSymbol("SPY", OptionRight.Call, 603, expiry));
+            call603.SetMarketPrice(new Tick { Value = 4.85m });
+            var call605 = _algorithm.AddOptionContract(Symbols.CreateOptionSymbol("SPY", OptionRight.Call, 605, expiry));
+            call605.SetMarketPrice(new Tick { Value = 3.77m });
+
+            call598.Holdings.SetHoldings(call598.Price, 1);
+            call603.Holdings.SetHoldings(call603.Price, -1);
+
+            if (holdSecondSpread)
+            {
+                call600.Holdings.SetHoldings(call600.Price, 1);
+                call605.Holdings.SetHoldings(call605.Price, -1);
+            }
+
+            return (call598, call600, call603, call605);
+        }
+
         // Increasing short position
         [TestCase(-10, -11)]
         // Decreasing short position
@@ -1023,6 +1114,41 @@ namespace QuantConnect.Tests.Common.Securities
                 new PositionGroupMaintenanceMarginParameters(_portfolio, positionGroup));
 
             Assert.AreEqual((double)expectedMaintenanceMargin, (double)maintenanceMargin.Value, (double)(0.2m * expectedMaintenanceMargin));
+        }
+
+        private static readonly TestCaseData[] ZeroQuantityPositionGroupTestCases = MaintenanceMarginTestCases
+            .Select(x => (OptionStrategyDefinition)x.Arguments[0])
+            .DistinctBy(x => x.Name)
+            .Select(x => new TestCaseData(x))
+            .ToArray();
+
+        [TestCaseSource(nameof(ZeroQuantityPositionGroupTestCases))]
+        public void GetsZeroMarginRequirementsForZeroQuantityPositionGroup(OptionStrategyDefinition optionStrategyDefinition)
+        {
+            var positionGroup = SetUpOptionStrategy(optionStrategyDefinition, 1);
+            // Zero-quantity groups are probed by PositionGroupBuyingPowerModel.GetPositionGroupOrderQuantity
+            // when iterating quantities towards a reduction target (e.g. during a margin call)
+            var zeroQuantityGroup = positionGroup.WithQuantity(0, _portfolio.Positions);
+
+            var initialMargin = zeroQuantityGroup.BuyingPowerModel.GetInitialMarginRequirement(
+                new PositionGroupInitialMarginParameters(_portfolio, zeroQuantityGroup));
+            var maintenanceMargin = zeroQuantityGroup.BuyingPowerModel.GetMaintenanceMargin(
+                new PositionGroupMaintenanceMarginParameters(_portfolio, zeroQuantityGroup));
+
+            Assert.AreEqual(0m, initialMargin.Value);
+            Assert.AreEqual(0m, maintenanceMargin.Value);
+        }
+
+        [Test]
+        public void FullyLiquidatesSingleLotGroupWhenMarginCallRequiresPartialReduction()
+        {
+            var positionGroup = SetUpOptionStrategy(OptionStrategyDefinitions.BullPutSpread, 1);
+
+            // Emulates DefaultMarginCallModel.GenerateMarginCallOrders: the margin call only needs to free
+            // part of the margin used by the group, but a single lot cannot be partially reduced,
+            // so the group should be fully liquidated instead of throwing
+            var usedMargin = positionGroup.BuyingPowerModel.GetReservedBuyingPowerForPositionGroup(_portfolio, positionGroup);
+            ComputeAndAssertQuantityForDeltaBuyingPower(positionGroup, -1, -usedMargin / 2);
         }
 
         /// <remarks>
