@@ -177,9 +177,13 @@ namespace QuantConnect.Lean.Engine.Setup
                     algorithm.Schedule.SetEventSchedule(parameters.RealTimeHandler);
 
                     // set the option chain provider
-                    var optionChainProvider = new BacktestingOptionChainProvider();
+                    var optionChainProviderName = Config.Get("option-chain-provider", nameof(BacktestingOptionChainProvider));
+                    var optionChainProvider = Composer.Instance.GetExportedValueByTypeName<IOptionChainProvider>(optionChainProviderName);
                     var initParameters = new ChainProviderInitializeParameters(parameters.MapFileProvider, algorithm.HistoryProvider);
-                    optionChainProvider.Initialize(initParameters);
+                    if (optionChainProvider is BacktestingChainProvider backtestingChainProvider)
+                    {
+                        backtestingChainProvider.Initialize(initParameters);
+                    }
                     algorithm.SetOptionChainProvider(new CachingOptionChainProvider(optionChainProvider));
 
                     // set the future chain provider
