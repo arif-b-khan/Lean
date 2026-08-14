@@ -47,6 +47,15 @@ $ git remote add upstream https://github.com/QuantConnect/Lean.git
 
 The remote upstream branch links your fork of Lean with our master copy, so when you perform a `git pull --rebase` you'll be getting updates from our repository.
 
+### Credential Setup
+
+Before running the Lean launcher for development or testing, you must configure credentials for broker/data provider connections. See [SECRETS_SETUP.md](SECRETS_SETUP.md) for detailed instructions on:
+- Setting up .NET user secrets
+- Configuring required credentials  
+- Troubleshooting credential issues
+
+**TL;DR**: Run `dotnet user-secrets set "<key>" "<value>"` in the `Launcher/` directory for each credential in `specs/001-credential-source-hardening/required-credentials.json`.
+
 ## Keeping your master up-to-date!
 Now that you've defined the `remote upstream branch`, you can refresh your local copy of master with the following commands:
 

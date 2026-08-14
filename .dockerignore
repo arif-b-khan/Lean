@@ -4,3 +4,9 @@ packages/*
 .vs/*
 .nuget/*
 Tests/*
+node_modules/
+Dockerfile*
+.dockerignore
+*.log*
+.env*
+coverage/

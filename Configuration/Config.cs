@@ -71,6 +71,25 @@ namespace QuantConnect.Configuration
         }
 
         /// <summary>
+        /// Merge secret key/value pairs into configuration.
+        /// </summary>
+        /// <param name="secrets">Secret values resolved outside source-controlled config</param>
+        public static void MergeSecretsWithConfiguration(Dictionary<string, string> secrets)
+        {
+            if (secrets == null || secrets.Count == 0)
+            {
+                return;
+            }
+
+            var jsonSecrets = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(secrets));
+
+            Settings.Value.Merge(jsonSecrets, new JsonMergeSettings
+            {
+                MergeArrayHandling = MergeArrayHandling.Union
+            });
+        }
+
+        /// <summary>
         /// Resets the config settings to their default values.
         /// Called in regression tests where multiple algorithms are run sequentially,
         /// and we need to guarantee that every test starts with the same configuration.

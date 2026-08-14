@@ -73,12 +73,19 @@
             "presentation": {
                 "reveal": "always"
             },
+            "options": {
+                "env": {
+                    "PYTHONNET_PYDLL": "${env:CONDA_PREFIX}/lib/libpython3.11.dylib"
+                }
+            },
             "problemMatcher": "$msCompile"
         },
         {
             "label": "start research",
             "type": "shell",
-            "dependsOn": ["build"],
+            "dependsOn": [
+                "build"
+            ],
             "group": "build",
             "isBackground": true,
             "command": "${workspaceFolder}/.vscode/launch_research.sh",

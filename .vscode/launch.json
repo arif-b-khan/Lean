@@ -21,6 +21,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
+            "env": {
+                "PYTHONNET_PYDLL": "${workspaceFolder}/.conda/lean-py311/lib/libpython3.11.dylib"
+            },
             "program": "${workspaceFolder}/Launcher/bin/Debug/QuantConnect.Lean.Launcher.dll",
             "args": [
                 "--config",
@@ -45,14 +48,21 @@
                 "TestCategory!=TravisExclude&TestCategory!=ResearchRegressionTests"
             ],
             "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONNET_PYDLL": "${workspaceFolder}/.conda/lean-py311/lib/libpython3.11.dylib"
+            },
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Attach to Python",
+            "name": "Attach to Python (5678)",
             "type": "python",
             "request": "attach",
-            "port": 5678,
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            },
+            "justMyCode": false,
             "pathMappings": [
                 {
                     "localRoot": "${workspaceFolder}",

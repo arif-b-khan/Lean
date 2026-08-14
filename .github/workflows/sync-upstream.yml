@@ -1,0 +1,99 @@
+name: Sync Upstream to Master
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # daily at 02:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream-to-master
+  cancel-in-progress: false
+
+env:
+  UPSTREAM_REPO: https://github.com/QuantConnect/Lean.git
+  UPSTREAM_BRANCH: master
+  TARGET_BRANCH: master
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN || github.token }}
+
+      - name: Configure Git identity
+        run: |
+          git config user.name "lean-sync-bot"
+          git config user.email "lean-sync-bot@users.noreply.github.com"
+
+      - name: Sync upstream into master
+        env:
+          HAS_PAT_TOKEN: ${{ secrets.PAT_TOKEN != '' }}
+        run: |
+          set -euo pipefail
+
+          if git remote get-url upstream > /dev/null 2>&1; then
+            git remote set-url upstream "$UPSTREAM_REPO"
+          else
+            git remote add upstream "$UPSTREAM_REPO"
+          fi
+
+          git fetch upstream "$UPSTREAM_BRANCH"
+          git fetch origin "$TARGET_BRANCH"
+          git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
+
+          BEFORE_SHA=$(git rev-parse HEAD)
+
+          set +e
+          git merge --no-edit "upstream/$UPSTREAM_BRANCH"
+          MERGE_EXIT=$?
+          set -e
+
+          if [ "$MERGE_EXIT" -ne 0 ]; then
+            CONFLICT_FILES=$(git diff --name-only --diff-filter=U || true)
+            {
+              echo "## Upstream Sync Conflict"
+              echo "Automatic sync could not merge upstream/$UPSTREAM_BRANCH into $TARGET_BRANCH."
+              echo
+              echo "Conflicting files:"
+              echo "$CONFLICT_FILES" | sed 's/^/- /'
+              echo
+              echo "Resolve the conflicts on $TARGET_BRANCH and re-run this workflow."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          AFTER_SHA=$(git rev-parse HEAD)
+
+          if [ "$BEFORE_SHA" = "$AFTER_SHA" ]; then
+            echo "No new upstream commits to sync." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          WORKFLOW_CHANGES=$(git diff --name-only "$BEFORE_SHA" "$AFTER_SHA" -- '.github/workflows/**' || true)
+          if [ -n "$WORKFLOW_CHANGES" ] && [ "$HAS_PAT_TOKEN" != "true" ]; then
+            {
+              echo "## Upstream Sync Needs PAT_TOKEN"
+              echo "The upstream merge changed workflow files, which the default GITHUB_TOKEN cannot push."
+              echo
+              echo "Changed workflow files:"
+              echo "$WORKFLOW_CHANGES" | sed 's/^/- /'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          git push origin "$TARGET_BRANCH"
+          {
+            echo "## Upstream Sync Completed"
+            echo "- Previous master SHA: $BEFORE_SHA"
+            echo "- New master SHA: $AFTER_SHA"
+            echo "- Source: upstream/$UPSTREAM_BRANCH"
+            echo "- Destination: origin/$TARGET_BRANCH"
+          } >> "$GITHUB_STEP_SUMMARY"

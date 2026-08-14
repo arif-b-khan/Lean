@@ -1,0 +1,62 @@
+{
+  "file-database-last-update": "04/26/2026",
+  "organization-path": "/Lean",
+  "data-folder": "Data",
+  "job-user-id": "0",
+  "api-access-token": "",
+  "job-organization-id": "4dcf4ee72ae430d2d09124e81e781545",
+  "organization-id": "4dcf4ee72ae430d2d09124e81e781545",
+  "log-handler": "QuantConnect.Logging.CompositeLogHandler",
+  "messaging-handler": "QuantConnect.Messaging.Messaging",
+  "job-queue-handler": "QuantConnect.Queues.JobQueue",
+  "api-handler": "QuantConnect.Api.Api",
+  "map-file-provider": "QuantConnect.Data.Auxiliary.LocalDiskMapFileProvider",
+  "factor-file-provider": "QuantConnect.Data.Auxiliary.LocalDiskFactorFileProvider",
+  "data-provider": "QuantConnect.Lean.Engine.DataFeeds.DefaultDataProvider",
+  "data-channel-provider": "DataChannelProvider",
+  "object-store": "QuantConnect.Lean.Engine.Storage.LocalObjectStore",
+  "data-aggregator": "QuantConnect.Lean.Engine.DataFeeds.AggregationManager",
+  "python-additional-paths": [],
+  "ib-user-name": "",
+  "ib-account": "",
+  "ib-password": "",
+  "ib-host": "127.0.0.1",
+  "ib-port": "4002",
+  "ib-agent-description": "Individual",
+  "ib-tws-dir": "/root/Jts",
+  "ib-version": "985",
+  "ib-trading-mode": "paper",
+  "ib-enable-delayed-streaming-data": false,
+  "ib-weekly-restart-utc-time": "22:00:00",
+  "live-cash-balance": "USD:100000",
+  "live-holdings": "",
+  "environments": {
+    "backtesting": {
+      "live-mode": false,
+      "setup-handler": "QuantConnect.Lean.Engine.Setup.BacktestingSetupHandler",
+      "result-handler": "QuantConnect.Lean.Engine.Results.BacktestingResultHandler",
+      "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.FileSystemDataFeed",
+      "real-time-handler": "QuantConnect.Lean.Engine.RealTime.BacktestingRealTimeHandler",
+      "history-provider": [
+        "QuantConnect.Lean.Engine.HistoricalData.SubscriptionDataReaderHistoryProvider"
+      ],
+      "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BacktestingTransactionHandler"
+    },
+    "live-interactive": {
+      "live-mode": true,
+      "live-mode-brokerage": "InteractiveBrokersBrokerage",
+      "setup-handler": "QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler",
+      "result-handler": "QuantConnect.Lean.Engine.Results.LiveTradingResultHandler",
+      "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.LiveTradingDataFeed",
+      "data-queue-handler": [
+        "InteractiveBrokersBrokerage"
+      ],
+      "real-time-handler": "QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler",
+      "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BrokerageTransactionHandler",
+      "history-provider": [
+        "BrokerageHistoryProvider",
+        "SubscriptionDataReaderHistoryProvider"
+      ]
+    }
+  }
+}
