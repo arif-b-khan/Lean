@@ -79,6 +79,14 @@ namespace QuantConnect.Configuration
                 new CommandLineOption("data-provider", CommandOptionType.SingleValue),
                 new CommandLineOption("alpha-handler", CommandOptionType.SingleValue),
                 new CommandLineOption("history-provider", CommandOptionType.SingleValue),
+                new CommandLineOption("option-chain-provider", CommandOptionType.SingleValue),
+                new CommandLineOption("plugin-directory", CommandOptionType.SingleValue),
+                new CommandLineOption("breeze-database-path", CommandOptionType.SingleValue),
+                new CommandLineOption("breeze-download-missing-data", CommandOptionType.SingleValue),
+                new CommandLineOption("breeze-api-key", CommandOptionType.SingleValue),
+                new CommandLineOption("breeze-api-secret", CommandOptionType.SingleValue),
+                new CommandLineOption("breeze-api-session", CommandOptionType.SingleValue),
+                new CommandLineOption("breeze-session-token", CommandOptionType.SingleValue),
 
                 // limits on number of symbols to allow
                 new CommandLineOption("symbol-minute-limit", CommandOptionType.SingleValue),
