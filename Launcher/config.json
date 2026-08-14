@@ -39,6 +39,13 @@
   "map-file-provider": "QuantConnect.Data.Auxiliary.LocalDiskMapFileProvider",
   "factor-file-provider": "QuantConnect.Data.Auxiliary.LocalDiskFactorFileProvider",
   "data-provider": "QuantConnect.Lean.Engine.DataFeeds.DefaultDataProvider",
+  "option-chain-provider": "QuantConnect.Lean.Engine.DataFeeds.BacktestingOptionChainProvider",
+  "breeze-database-path": "breeze-options.duckdb",
+  "breeze-download-missing-data": false,
+  "breeze-api-key": "",
+  "breeze-api-secret": "",
+  "breeze-api-session": "",
+  "breeze-session-token": "",
   "data-channel-provider": "DataChannelProvider",
   "object-store": "QuantConnect.Lean.Engine.Storage.LocalObjectStore",
   "data-aggregator": "QuantConnect.Lean.Engine.DataFeeds.AggregationManager",
@@ -326,6 +333,23 @@
       "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.FileSystemDataFeed",
       "real-time-handler": "QuantConnect.Lean.Engine.RealTime.BacktestingRealTimeHandler",
       "history-provider": [ "QuantConnect.Lean.Engine.HistoricalData.SubscriptionDataReaderHistoryProvider" ],
+      "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BacktestingTransactionHandler"
+    },
+
+    // Uses the ICICI Direct plugin directory and reads option data directly from DuckDB.
+    "backtesting-breeze-duckdb": {
+      "live-mode": false,
+
+      "data-provider": "QuantConnect.Brokerages.ICICIDirect.Runtime.DuckDbBreezeDataProvider",
+      "option-chain-provider": "QuantConnect.Brokerages.ICICIDirect.Runtime.DuckDbBreezeOptionChainProvider",
+      "history-provider": [
+        "QuantConnect.Brokerages.ICICIDirect.Runtime.DuckDbBreezeHistoryProvider",
+        "QuantConnect.Lean.Engine.HistoricalData.SubscriptionDataReaderHistoryProvider"
+      ],
+      "setup-handler": "QuantConnect.Lean.Engine.Setup.BacktestingSetupHandler",
+      "result-handler": "QuantConnect.Lean.Engine.Results.BacktestingResultHandler",
+      "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.FileSystemDataFeed",
+      "real-time-handler": "QuantConnect.Lean.Engine.RealTime.BacktestingRealTimeHandler",
       "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BacktestingTransactionHandler"
     },
 
