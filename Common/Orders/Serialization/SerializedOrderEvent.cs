@@ -151,6 +151,12 @@ namespace QuantConnect.Orders.Serialization
         public bool IsInTheMoney { get; set; }
 
         /// <summary>
+        /// Native execution identifier assigned by the brokerage, when available.
+        /// </summary>
+        [JsonProperty("brokerageExecutionId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string BrokerageExecutionId { get; set; }
+
+        /// <summary>
         /// Empty constructor required for JSON converter.
         /// </summary>
         public SerializedOrderEvent()
@@ -185,6 +191,7 @@ namespace QuantConnect.Orders.Serialization
             Quantity = orderEvent.Quantity;
             StopPrice = orderEvent.StopPrice;
             LimitPrice = orderEvent.LimitPrice;
+            BrokerageExecutionId = orderEvent.BrokerageExecutionId;
         }
 
         #region BackwardsCompatibility
