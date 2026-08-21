@@ -49,8 +49,12 @@ def _looks_like_forbidden_markdown_path(path: str) -> bool:
     if not normalized.lower().endswith(".md"):
         return False
 
+    # Agent skills must use this canonical location and filename.
+    if re.search(r"(?:^|/)\.github/skills/[^/]+/SKILL\.md$", normalized, re.IGNORECASE):
+        return False
+
     # Allowed markdown destinations.
-    if normalized.startswith("Docs/") or normalized.startswith("./Docs/"):
+    if normalized.startswith(("Docs/", "./Docs/")):
         return False
 
     # Block root-level markdown and markdown under any non-Docs directory.
